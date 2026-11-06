@@ -1,4 +1,4 @@
-import { PENGELOLA_BK, STAF, type Role } from "@/lib/roles";
+import { KELOLA_DATA, KEUANGAN, LIHAT_KEUANGAN, PASANG_INFO_KARIER, STAF, PENGELOLA_BK, type Role } from "@/lib/roles";
 
 export type Field = {
   name: string;
@@ -36,7 +36,7 @@ export type Resource = {
 };
 
 const staff: Role[] = STAF;
-const admin: Role[] = ["admin"];
+const admin: Role[] = KELOLA_DATA;
 
 export const resources: Record<string, Resource> = {
   "tahun-ajaran": {
@@ -205,11 +205,95 @@ export const resources: Record<string, Resource> = {
       { name: "email", label: "Email", type: "text" },
     ],
   },
+  biaya: {
+    table: "biaya",
+    title: "Master biaya",
+    read: LIHAT_KEUANGAN,
+    write: KEUANGAN,
+    order: "nama",
+    list: ["nama", "tingkat", "nominal", "periode", "aktif"],
+    fields: [
+      { name: "nama", label: "Jenis biaya", type: "text", required: true, hint: "Mis. SPP, uang gedung, seragam, ujian, kegiatan." },
+      {
+        name: "tingkat",
+        label: "Tingkat",
+        type: "select",
+        cast: "int",
+        hint: "Kosongkan untuk semua tingkat.",
+        options: [
+          { value: "10", label: "X" },
+          { value: "11", label: "XI" },
+          { value: "12", label: "XII" },
+        ],
+      },
+      { name: "nominal", label: "Nominal (Rp)", type: "number", required: true },
+      {
+        name: "periode",
+        label: "Periode tagihan",
+        type: "select",
+        required: true,
+        options: [
+          { value: "bulanan", label: "Bulanan" },
+          { value: "semester", label: "Per semester" },
+          { value: "tahunan", label: "Tahunan" },
+          { value: "sekali", label: "Sekali bayar" },
+        ],
+      },
+      { name: "tahun_ajaran_id", label: "Tahun ajaran", type: "select", cast: "int", ref: { table: "tahun_ajaran", label: "nama" } },
+      {
+        name: "aktif",
+        label: "Aktif",
+        type: "select",
+        cast: "bool",
+        bawaan: "true",
+        options: [
+          { value: "true", label: "Ya" },
+          { value: "false", label: "Tidak" },
+        ],
+      },
+    ],
+  },
+  keringanan: {
+    table: "keringanan",
+    title: "Keringanan dan beasiswa",
+    read: LIHAT_KEUANGAN,
+    write: KEUANGAN,
+    order: "id",
+    list: ["siswa_id", "biaya_id", "jenis", "nilai", "keterangan"],
+    fields: [
+      { name: "siswa_id", label: "Siswa", type: "select", required: true, cast: "int", ref: { table: "siswa", label: "nama" } },
+      { name: "biaya_id", label: "Berlaku untuk biaya", type: "select", cast: "int", ref: { table: "biaya", label: "nama" }, hint: "Kosongkan untuk semua biaya." },
+      {
+        name: "jenis",
+        label: "Jenis potongan",
+        type: "select",
+        required: true,
+        options: [
+          { value: "persen", label: "Persen (%)" },
+          { value: "nominal", label: "Nominal (Rp)" },
+        ],
+      },
+      { name: "nilai", label: "Nilai potongan", type: "number", required: true },
+      { name: "keterangan", label: "Keterangan (mis. Beasiswa prestasi, yatim)", type: "text" },
+    ],
+  },
+  "wali-siswa": {
+    table: "wali_siswa",
+    title: "Wali siswa",
+    read: admin,
+    write: admin,
+    order: "id",
+    list: ["wali_id", "siswa_id"],
+    fields: [
+      { name: "wali_id", label: "Orang tua/wali", type: "select", required: true, cast: "int", ref: { table: "wali", label: "nama" } },
+      { name: "siswa_id", label: "Siswa (anak)", type: "select", required: true, cast: "int", ref: { table: "siswa", label: "nama" } },
+    ],
+  },
   "info-karier": {
     table: "info_karier",
     title: "Info karier",
-    read: staff,
-    write: PENGELOLA_BK,
+    read: [...staff, "mitra"],
+    write: PASANG_INFO_KARIER,
     order: "id",
     list: ["jenis", "judul", "kategori_riasec", "batas_waktu"],
     fields: [

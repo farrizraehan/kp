@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { emailDariLogin, emailLamaDariLogin } from "@/lib/akun";
+import { emailDariLogin, emailGuruDariLogin, emailLamaDariLogin } from "@/lib/akun";
 import { PasswordInput } from "@/components/password-input";
 
 const PESAN: Record<string, string> = {
@@ -30,6 +30,9 @@ export function LoginForm({ pesan }: { pesan?: string }) {
       // akun siswa lama yang emailnya belum dipindahkan
       const lama = emailLamaDariLogin(login);
       if (error && lama) ({ error } = await auth.signInWithPassword({ email: lama, password }));
+      // akun guru dan guru BK memakai kode login tanpa domain
+      const guru = emailGuruDariLogin(login);
+      if (error && guru) ({ error } = await auth.signInWithPassword({ email: guru, password }));
       if (error) {
         setError("NISN/email atau kata sandi salah. Periksa lagi, termasuk huruf besar-kecil.");
         return;
@@ -49,7 +52,7 @@ export function LoginForm({ pesan }: { pesan?: string }) {
       <label>
         NISN atau email
         <input name="email" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required />
-        <span className="hint">Siswa: ketik NISN (10 angka). Guru dan staf: ketik email.</span>
+        <span className="hint">Siswa: ketik NISN (10 angka). Guru: ketik kode login (mis. depan011). Staf lain: ketik email.</span>
       </label>
       <label>
         Kata sandi

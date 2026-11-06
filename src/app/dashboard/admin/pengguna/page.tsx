@@ -19,8 +19,8 @@ export const metadata = { title: "Akun login" };
 const OK: Record<string, string> = { dibuat: "Akun dibuat.", aktif: "Akun diaktifkan.", hapus: "Akun dihapus." };
 const TAB = ["staf", "siswa", "alumni", "menunggu"] as const;
 type Tab = (typeof TAB)[number];
-const LABEL: Record<Tab, string> = { staf: "Guru & staf", siswa: "Siswa", alumni: "Alumni", menunggu: "Menunggu aktivasi" };
-const PERAN_STAF: Role[] = ["admin", "guru", "bk"];
+const LABEL: Record<Tab, string> = { staf: "Guru, staf & mitra", siswa: "Siswa", alumni: "Alumni", menunggu: "Menunggu aktivasi" };
+const PERAN_STAF: Role[] = ["admin", "kepala", "operator", "guru", "bk", "ortu", "mitra"];
 
 type P = { id: string; nama: string; role: Role; aktif: boolean; wajib_ganti_sandi: boolean };
 

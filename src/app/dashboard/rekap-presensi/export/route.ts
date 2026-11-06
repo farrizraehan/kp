@@ -1,12 +1,12 @@
 import ExcelJS from "exceljs";
 import { getProfile } from "@/lib/auth";
-import { PENGAJAR } from "@/lib/roles";
+import { LIHAT_AKADEMIK } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 import { kelasBolehIsi, rekapPresensi } from "@/lib/akses";
 
 export async function GET(request: Request) {
   const p = await getProfile();
-  if (!p || !PENGAJAR.includes(p.role)) return new Response("Tidak diizinkan", { status: 403 });
+  if (!p || !LIHAT_AKADEMIK.includes(p.role)) return new Response("Tidak diizinkan", { status: 403 });
   const url = new URL(request.url);
   const kelas = Number(url.searchParams.get("kelas"));
   const bulan = url.searchParams.get("bulan") ?? "";

@@ -78,6 +78,8 @@ async function tautkanData(admin: ReturnType<typeof createAdminClient>, id: stri
   if (role === "alumni") {
     await admin.from("alumni").insert({ profile_id: id, nama, email, tahun_lulus: Number(tahunLulus) });
   }
+  if (role === "ortu") await admin.from("wali").insert({ profile_id: id, nama });
+  if (role === "mitra") await admin.from("mitra").insert({ profile_id: id, nama });
 }
 
 export async function createUser(formData: FormData) {

@@ -1,9 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Profile } from "@/lib/auth";
 
-/** null = boleh semua kelas (admin); array = hanya kelas yang diampu/diwalikan guru. */
+/** Peran yang melihat semua kelas tanpa harus mengajar (kepala madrasah dan operator hanya melihat). */
+const SEMUA_KELAS = ["admin", "kepala", "operator"];
+
+/** null = boleh semua kelas (admin, kepala, operator); array = hanya kelas yang diampu/diwalikan guru. */
 export async function kelasBolehIsi(supabase: SupabaseClient, p: Profile): Promise<number[] | null> {
-  if (p.role === "admin") return null;
+  if (SEMUA_KELAS.includes(p.role)) return null;
   const { data: g } = await supabase.from("guru").select("id").eq("profile_id", p.id).maybeSingle();
   if (!g) return [];
   const [{ data: j }, { data: k }] = await Promise.all([

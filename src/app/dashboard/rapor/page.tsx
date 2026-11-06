@@ -2,7 +2,7 @@ import { requireRole } from "@/lib/auth";
 import Link from "next/link";
 import { AutoForm } from "@/components/auto-form";
 import { createClient } from "@/lib/supabase/server";
-import { nilaiAkhir } from "@/lib/roles";
+import { LIHAT_AKADEMIK, nilaiAkhir } from "@/lib/roles";
 import { Crest } from "@/components/crest";
 import { PageHead, one } from "@/components/ui";
 import { PrintButton } from "@/components/print-button";
@@ -12,7 +12,7 @@ type N = { id: number; tugas: number | null; uts: number | null; uas: number | n
 export const metadata = { title: "Rapor" };
 
 export default async function Rapor({ searchParams }: PageProps<"/dashboard/rapor">) {
-  const p = await requireRole(["admin", "guru", "bk", "siswa"]);
+  const p = await requireRole([...LIHAT_AKADEMIK, "siswa"]);
   const sp = await searchParams;
   const supabase = await createClient();
 

@@ -6,6 +6,14 @@ const ALIAS_SISWA = "siswa-";
 /** Domain internal lama (tidak menerima surat); akun lama tetap bisa masuk sampai dipindahkan. */
 export const DOMAIN_SISWA_LAMA = "siswa.masalriyadhuljanah.sch.id";
 
+/** Domain internal akun guru dan guru BK: login cukup mengetik kode (mis. depan011) atau email lengkap. */
+export const DOMAIN_GURU = "guru.masalriyadhuljanah.sch.id";
+
+export function emailGuruDariLogin(v: string): string | null {
+  const t = v.trim().toLowerCase();
+  return t.includes("@") ? null : `${t}@${DOMAIN_GURU}`;
+}
+
 export function emailDariLogin(v: string): string {
   const t = v.trim().toLowerCase();
   if (t.includes("@")) return t;

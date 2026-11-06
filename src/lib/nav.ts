@@ -8,6 +8,18 @@ const data = (key: string, label: string): Item => ({ href: `/dashboard/data/${k
 const g = (label: string, ...items: Item[]): NavGroup => ({ label, items });
 const jadwal: Item = { href: "/dashboard/jadwal", label: "Jadwal", juga: ["/dashboard/data/jadwal"] };
 const akun = g("Akun saya", { href: "/dashboard/akun", label: "Akun saya" });
+const pembayaran = g(
+  "Pembayaran",
+  { href: "/dashboard/pembayaran", label: "Tagihan", juga: ["/dashboard/pembayaran/buat", "/dashboard/pembayaran/kuitansi"] },
+  { href: "/dashboard/pembayaran/laporan", label: "Laporan" },
+  data("biaya", "Master biaya"),
+  data("keringanan", "Keringanan"),
+);
+const pembayaranLihat = g(
+  "Pembayaran",
+  { href: "/dashboard/pembayaran", label: "Tagihan", juga: ["/dashboard/pembayaran/kuitansi"] },
+  { href: "/dashboard/pembayaran/laporan", label: "Laporan" },
+);
 
 export function navFor(role: Role): NavGroup[] {
   switch (role) {
@@ -21,7 +33,7 @@ export function navFor(role: Role): NavGroup[] {
           { href: "/dashboard/admin/akun-massal", label: "Akun siswa" },
           { href: "/dashboard/admin/kelulusan", label: "Kelulusan" },
         ),
-        g("Guru & akun", { href: "/dashboard/admin/pengguna", label: "Akun login" }, data("guru", "Data guru")),
+        g("Guru & akun", { href: "/dashboard/admin/pengguna", label: "Akun login" }, data("guru", "Data guru"), data("wali-siswa", "Wali siswa")),
         g(
           "Akademik",
           { href: "/dashboard/presensi", label: "Presensi" },
@@ -38,7 +50,43 @@ export function navFor(role: Role): NavGroup[] {
           data("soal-asesmen", "Soal asesmen"),
         ),
         g("Alumni", { href: "/dashboard/tracer", label: "Rekap tracer" }, data("alumni", "Data alumni")),
+        pembayaran,
         g("Website madrasah", data("pengumuman", "Pengumuman"), data("konten-profil", "Profil madrasah"), data("prestasi", "Prestasi")),
+        akun,
+      ];
+    case "kepala":
+      return [
+        g("Beranda", { href: "/dashboard/kepala", label: "Dasbor" }),
+        g("Akademik", { href: "/dashboard/rekap-presensi", label: "Rekap presensi" }, { href: "/dashboard/rapor", label: "Rapor" }, jadwal),
+        g("Siswa & guru", data("siswa", "Data siswa"), data("guru", "Data guru"), data("kelas", "Kelas")),
+        g("Karier", { href: "/dashboard/asesmen", label: "Hasil asesmen" }, data("info-karier", "Info karier")),
+        g("Alumni", { href: "/dashboard/tracer", label: "Rekap tracer" }, data("alumni", "Data alumni")),
+        pembayaranLihat,
+        g("Pengumuman", data("pengumuman", "Pengumuman")),
+        akun,
+      ];
+    case "operator":
+      return [
+        g("Beranda", { href: "/dashboard/operator", label: "Beranda" }),
+        g("Siswa", data("siswa", "Data siswa"), data("wali-siswa", "Wali siswa")),
+        g("Guru", data("guru", "Data guru")),
+        g("Data sekolah", data("kelas", "Kelas"), jadwal, data("mapel", "Mata pelajaran"), data("tahun-ajaran", "Tahun ajaran")),
+        pembayaran,
+        g("Akademik", { href: "/dashboard/rekap-presensi", label: "Rekap presensi" }, { href: "/dashboard/rapor", label: "Rapor" }),
+        g("Alumni", { href: "/dashboard/tracer", label: "Rekap tracer" }, data("alumni", "Data alumni")),
+        g("Website madrasah", data("pengumuman", "Pengumuman"), data("konten-profil", "Profil madrasah"), data("prestasi", "Prestasi")),
+        akun,
+      ];
+    case "ortu":
+      return [
+        g("Anak saya", { href: "/dashboard/ortu", label: "Nilai & presensi" }),
+        g("Info karier", { href: "/dashboard/karier", label: "Info karier" }),
+        akun,
+      ];
+    case "mitra":
+      return [
+        g("Beranda", { href: "/dashboard/mitra", label: "Beranda" }),
+        g("Info karier", data("info-karier", "Info yang saya pasang")),
         akun,
       ];
     case "guru":

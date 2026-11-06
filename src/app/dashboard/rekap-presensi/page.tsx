@@ -4,13 +4,13 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { kelasBolehIsi, rekapPresensi } from "@/lib/akses";
 import { PageHead, one } from "@/components/ui";
-import { PENGAJAR } from "@/lib/roles";
+import { LIHAT_AKADEMIK } from "@/lib/roles";
 import { hariIni } from "@/lib/waktu";
 
 export const metadata = { title: "Rekap presensi" };
 
 export default async function RekapPresensi({ searchParams }: PageProps<"/dashboard/rekap-presensi">) {
-  const p = await requireRole(PENGAJAR);
+  const p = await requireRole(LIHAT_AKADEMIK);
   const sp = await searchParams;
   const supabase = await createClient();
   const boleh = await kelasBolehIsi(supabase, p);

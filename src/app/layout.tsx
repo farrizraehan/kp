@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist } from "next/font/google";
 import "./globals.css";
 
@@ -18,6 +18,13 @@ export const metadata: Metadata = {
   title: { default: "MA Al-Riyadhul Janah — Portal Madrasah", template: "%s — MA Al-Riyadhul Janah" },
   description:
     "Portal akademik, bimbingan karier, dan tracer study alumni Madrasah Aliyah Al-Riyadhul Janah, Maja, Lebak.",
+  applicationName: "Riyadhul Janah",
+  appleWebApp: { capable: true, title: "Riyadhul Janah", statusBarStyle: "default" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1b5a3a",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

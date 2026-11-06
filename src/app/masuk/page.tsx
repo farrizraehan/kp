@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Crest, StarPattern } from "@/components/crest";
+import { InstallApp } from "@/components/install-app";
 import { LoginForm } from "./login-form";
 
 export const metadata = { title: "Masuk" };
@@ -24,6 +25,7 @@ export default async function Masuk({ searchParams }: PageProps<"/masuk">) {
 
       <main id="konten" className="auth__main">
         <LoginForm pesan={pesan} />
+        <InstallApp />
       </main>
     </div>
   );

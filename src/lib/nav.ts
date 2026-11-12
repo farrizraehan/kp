@@ -51,7 +51,7 @@ export function navFor(role: Role): NavGroup[] {
         ),
         g("Alumni", { href: "/dashboard/tracer", label: "Rekap tracer" }, data("alumni", "Data alumni")),
         pembayaran,
-        g("Website madrasah", data("pengumuman", "Pengumuman"), data("konten-profil", "Profil madrasah"), data("prestasi", "Prestasi")),
+        g("Website madrasah", { href: "/dashboard/identitas", label: "Identitas & kepala" }, data("pengumuman", "Pengumuman"), data("konten-profil", "Profil madrasah"), data("prestasi", "Prestasi")),
         akun,
       ];
     case "kepala":
@@ -74,7 +74,7 @@ export function navFor(role: Role): NavGroup[] {
         pembayaran,
         g("Akademik", { href: "/dashboard/rekap-presensi", label: "Rekap presensi" }, { href: "/dashboard/rapor", label: "Rapor" }),
         g("Alumni", { href: "/dashboard/tracer", label: "Rekap tracer" }, data("alumni", "Data alumni")),
-        g("Website madrasah", data("pengumuman", "Pengumuman"), data("konten-profil", "Profil madrasah"), data("prestasi", "Prestasi")),
+        g("Website madrasah", { href: "/dashboard/identitas", label: "Identitas & kepala" }, data("pengumuman", "Pengumuman"), data("konten-profil", "Profil madrasah"), data("prestasi", "Prestasi")),
         akun,
       ];
     case "ortu":

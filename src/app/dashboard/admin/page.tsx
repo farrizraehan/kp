@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { HARI, nilaiAkhir } from "@/lib/roles";
 import { hariIni, tanggalPanjang } from "@/lib/waktu";
+import { BATAS_BELUM_MASUK_HARI, BATAS_TIDAK_AKTIF_HARI, ringkasAktivitasAkun } from "@/lib/aktivitas-akun";
 import { PageHead } from "@/components/ui";
 
 export const metadata = { title: "Beranda" };
@@ -23,7 +24,7 @@ export default async function AdminHome() {
       supabase.from("presensi").select("siswa_id").eq("tanggal", hari),
       supabase.from("jadwal").select("kelas_id, mapel_id, hari"),
       supabase.from("tahun_ajaran").select("id, nama, semester").eq("aktif", true).limit(1).maybeSingle(),
-      supabase.from("profiles").select("role, wajib_ganti_sandi").eq("aktif", true),
+      supabase.from("profiles").select("id, role, aktif"),
       supabase.from("konseling").select("*", { count: "exact", head: true }).eq("status", "diajukan"),
       head("info_karier"),
       head("alumni"),
@@ -55,19 +56,24 @@ export default async function AdminHome() {
     return { k, total: mapel.length, selesai };
   });
 
-  const belumLogin = (r: string) => (profil ?? []).filter((x) => x.role === r && x.wajib_ganti_sandi).length;
-  const guruBelum = belumLogin("guru") + belumLogin("bk");
-  const siswaBelum = belumLogin("siswa");
+  const akt = await ringkasAktivitasAkun(profil ?? []);
+  const jumlah = (m: Record<string, number>, ...peran: string[]) => peran.reduce((a, r) => a + (m[r] ?? 0), 0);
+  const guruBelum = jumlah(akt.belumMasuk, "guru", "bk");
+  const siswaBelum = jumlah(akt.belumMasuk, "siswa");
+  const tidakAktif = jumlah(akt.tidakAktif, "guru", "bk", "siswa", "operator", "kepala", "ortu", "mitra", "alumni");
 
   const tindak: Tugas[] = [
     ...((konseling.count ?? 0) > 0
       ? [{ teks: `${konseling.count} pengajuan konseling menunggu jadwal`, href: "/dashboard/konseling", aksi: "Buka konseling" }]
       : []),
     ...(guruBelum > 0
-      ? [{ teks: `${guruBelum} akun guru belum pernah dipakai (kata sandi awal belum diganti)`, href: "/dashboard/admin/pengguna?login=belum", aksi: "Lihat akun guru" }]
+      ? [{ teks: `${guruBelum} akun guru belum pernah masuk lebih dari ${BATAS_BELUM_MASUK_HARI} hari sejak dibuat`, href: "/dashboard/admin/pengguna?login=belum", aksi: "Lihat akun guru" }]
       : []),
     ...(siswaBelum > 0
-      ? [{ teks: `${siswaBelum} akun siswa belum pernah dipakai`, href: "/dashboard/admin/akun-massal", aksi: "Lihat akun siswa" }]
+      ? [{ teks: `${siswaBelum} akun siswa belum pernah masuk lebih dari ${BATAS_BELUM_MASUK_HARI} hari sejak dibuat`, href: "/dashboard/admin/akun-massal", aksi: "Lihat akun siswa" }]
+      : []),
+    ...(tidakAktif > 0
+      ? [{ teks: `${tidakAktif} akun tidak aktif (tidak masuk lebih dari ${BATAS_TIDAK_AKTIF_HARI} hari)`, href: "/dashboard/admin/pengguna", aksi: "Lihat akun" }]
       : []),
     ...((info.count ?? 0) === 0 ? [{ teks: "Info kampus, beasiswa, dan karier belum diisi", href: "/dashboard/data/info-karier/baru", aksi: "Tambah info" }] : []),
   ];

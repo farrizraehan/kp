@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ambilSitus, SITUS_BAWAAN } from "@/lib/situs";
 import { createPublicClient } from "@/lib/supabase/public";
 import { Crest, StarPattern } from "@/components/crest";
 
@@ -31,30 +32,31 @@ type Statistik = { siswa: number; guru: number; kelas: number; alumni: number };
 
 export const revalidate = 60;
 
-const ALAMAT = "Jl. Johar Atmaja, Kp. Kaburon, Desa Maja, Kec. Maja, Kab. Lebak, Banten";
-
 async function ambilData() {
   try {
     const supabase = createPublicClient();
-    const [k, p, n, s] = await Promise.all([
+    const [k, p, n, s, situs] = await Promise.all([
       supabase.from("konten_profil").select("id, bagian, judul, isi, urutan").order("urutan").order("id"),
       supabase.from("prestasi").select("id, tahun, judul, tingkat, keterangan").order("tahun", { ascending: false }).order("id").limit(12),
       supabase.from("pengumuman").select("id, judul, isi, created_at").order("created_at", { ascending: false }).limit(3),
       supabase.rpc("statistik_publik"),
+      ambilSitus(supabase),
     ]);
     return {
       konten: (k.data ?? []) as Konten[],
       prestasi: (p.data ?? []) as Prestasi[],
       pengumuman: (n.data ?? []) as Berita[],
       statistik: (s.data ?? null) as Statistik | null,
+      situs,
     };
   } catch {
-    return { konten: [], prestasi: [], pengumuman: [], statistik: null };
+    return { konten: [], prestasi: [], pengumuman: [], statistik: null, situs: SITUS_BAWAAN };
   }
 }
 
 export default async function Home() {
-  const { konten, prestasi, pengumuman, statistik } = await ambilData();
+  const { konten, prestasi, pengumuman, statistik, situs } = await ambilData();
+  const ALAMAT = situs.alamat;
   const bagian = (b: string) => konten.filter((x) => x.bagian === b);
   const profil = bagian("profil");
   const sambutan = bagian("sambutan");
@@ -90,8 +92,8 @@ export default async function Home() {
           <Link href="/" className="brand">
             <Crest size={44} />
             <span>
-              <span className="brand__name">MA Al-Riyadhul Janah</span>
-              <span className="brand__sub">Yayasan Al-Riyadhul Janah · Maja, Lebak</span>
+              <span className="brand__name">{situs.nama_madrasah}</span>
+              <span className="brand__sub">{situs.nama_yayasan}</span>
             </span>
           </Link>
           <nav className="band__nav" aria-label="Bagian halaman">
@@ -110,11 +112,8 @@ export default async function Home() {
       <main id="konten">
         <section className="wrap hero">
           <div className="hero__text">
-            <h1>Satu portal untuk siswa, guru, dan alumni.</h1>
-            <p>
-              Portal resmi Madrasah Aliyah Al-Riyadhul Janah untuk mengelola akademik,
-              membimbing karier siswa, dan menjaga hubungan dengan alumni.
-            </p>
+            <h1>{situs.judul_hero}</h1>
+            <p>{situs.deskripsi_hero}</p>
             <Link href="/masuk" className="btn">
               Masuk ke portal
             </Link>
@@ -122,10 +121,12 @@ export default async function Home() {
           <div className="hero__panel">
             <StarPattern id="hero-star" />
             <Crest size={136} />
-            <p className="hero__cap">
-              <strong>Terakreditasi B</strong>
-              <span className="nowrap">BAN-SM No. 1346/BAN-SM/SK/2021</span>
-            </p>
+            {situs.akreditasi && (
+              <p className="hero__cap">
+                <strong>Terakreditasi {situs.akreditasi}</strong>
+                {situs.nomor_sk && <span className="nowrap">{situs.nomor_sk}</span>}
+              </p>
+            )}
           </div>
         </section>
 
@@ -157,6 +158,12 @@ export default async function Home() {
                       <dd>{p.isi}</dd>
                     </div>
                   ))}
+                  {situs.kepala_madrasah && (
+                    <div>
+                      <dt>Kepala madrasah</dt>
+                      <dd>{situs.kepala_madrasah}</dd>
+                    </div>
+                  )}
                   <div>
                     <dt>Alamat</dt>
                     <dd>{ALAMAT}</dd>
@@ -171,15 +178,23 @@ export default async function Home() {
                 </div>
                 <div>
                   <dt>Yayasan</dt>
-                  <dd>Yayasan Pendidikan Islam Al-Riyadhul Janah</dd>
+                  <dd>{situs.nama_yayasan}</dd>
                 </div>
-                <div>
-                  <dt>Akreditasi</dt>
-                  <dd>
-                    B
-                    <span className="nowrap muted">BAN-SM Nomor 1346/BAN-SM/SK/2021</span>
-                  </dd>
-                </div>
+                {situs.kepala_madrasah && (
+                  <div>
+                    <dt>Kepala madrasah</dt>
+                    <dd>{situs.kepala_madrasah}</dd>
+                  </div>
+                )}
+                {situs.akreditasi && (
+                  <div>
+                    <dt>Akreditasi</dt>
+                    <dd>
+                      {situs.akreditasi}
+                      {situs.nomor_sk && <span className="nowrap muted">{situs.nomor_sk}</span>}
+                    </dd>
+                  </div>
+                )}
               </dl>
             )}
           </div>
@@ -191,7 +206,7 @@ export default async function Home() {
             {sambutan.map((s) => (
               <div key={s.id} className="letter">
                 <p>{s.isi}</p>
-                {s.judul && <p className="letter__from">{s.judul}</p>}
+                {(s.judul || situs.kepala_madrasah) && <p className="letter__from">{s.judul ?? `Kepala Madrasah, ${situs.kepala_madrasah}`}</p>}
               </div>
             ))}
           </section>
@@ -312,6 +327,18 @@ export default async function Home() {
               <dt>Alamat</dt>
               <dd>{ALAMAT}</dd>
             </div>
+            {situs.telepon && (
+              <div>
+                <dt>Telepon</dt>
+                <dd>{situs.telepon}</dd>
+              </div>
+            )}
+            {situs.email && (
+              <div>
+                <dt>Email</dt>
+                <dd>{situs.email}</dd>
+              </div>
+            )}
             {kontak.map((k) => (
               <div key={k.id}>
                 <dt>{k.judul ?? "Kontak"}</dt>
@@ -323,7 +350,7 @@ export default async function Home() {
               <dd>
                 <a
                   className="btn btn--outline btn--sm"
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("MA Al-Riyadhul Janah, " + ALAMAT)}`}
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${situs.nama_madrasah}, ${ALAMAT}`)}`}
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -337,7 +364,7 @@ export default async function Home() {
 
       <footer className="foot">
         <div className="wrap foot__in">
-          <span>MA Al-Riyadhul Janah · Maja, Lebak, Banten</span>
+          <span>{situs.nama_madrasah} · Maja, Lebak, Banten</span>
           <span>Dikembangkan saat KP oleh Farriz Raehan dan Moh. Fachri Hasan</span>
         </div>
       </footer>
